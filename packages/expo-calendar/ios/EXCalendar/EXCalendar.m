@@ -41,7 +41,7 @@ EX_EXPORT_MODULE(ExpoCalendar);
 #pragma mark -
 #pragma mark Event Store Accessors
 
-EX_EXPORT_METHOD_AS(getCalendarAsync,
+EX_EXPORT_METHOD_AS(getCalendarsAsync,
                     getCalendarsAsync:(NSString *)typeString
                     resolver:(EXPromiseResolveBlock)resolve
                     rejecter:(EXPromiseRejectBlock)reject)
@@ -132,7 +132,7 @@ EX_EXPORT_METHOD_AS(saveCalendarAsync,
     resolve(calendar.calendarIdentifier);
   } else {
     reject(@"E_CALENDAR_NOT_SAVED",
-         [NSString stringWithFormat:@"Calendar %@ could not be saved", title],
+           [NSString stringWithFormat:@"Calendar '%@' could not be saved: %@", title, error.description],
          error);
   }
 }
@@ -165,8 +165,8 @@ EX_EXPORT_METHOD_AS(deleteCalendarAsync,
 }
 
 EX_EXPORT_METHOD_AS(getEventsAsync,
-                    getEventsAsync:(NSDate *)startDate
-                    endDate:(NSDate *)endDate
+                    getEventsAsync:(NSString *)startDateStr
+                    endDate:(NSString *)endDateStr
                     calendars:(NSArray *)calendars
                     resolver:(EXPromiseResolveBlock)resolve
                     rejecter:(EXPromiseRejectBlock)reject)
@@ -176,6 +176,8 @@ EX_EXPORT_METHOD_AS(getEventsAsync,
   }
 
   NSMutableArray *eventCalendars;
+  NSDate *startDate = [EXUtilities NSDate:startDateStr];
+  NSDate *endDate = [EXUtilities NSDate:endDateStr];
 
   if (calendars.count) {
     eventCalendars = [[NSMutableArray alloc] init];
@@ -205,7 +207,7 @@ EX_EXPORT_METHOD_AS(getEventsAsync,
 
 EX_EXPORT_METHOD_AS(getEventByIdAsync,
                     getEventByIdAsync:(NSString *)eventId
-                    startDate:(NSDate *)startDate
+                    startDate:(NSString *)startDateStr
                     resolver:(EXPromiseResolveBlock)resolve
                     rejecter:(EXPromiseRejectBlock)reject)
 {
@@ -213,6 +215,7 @@ EX_EXPORT_METHOD_AS(getEventByIdAsync,
     return;
   }
 
+  NSDate *startDate = [EXUtilities NSDate:startDateStr];
   EKEvent *calendarEvent = [self _getEventWithId:eventId startDate:startDate];
 
   if (calendarEvent) {
@@ -437,8 +440,8 @@ EX_EXPORT_METHOD_AS(getAttendeesForEventAsync,
 }
 
 EX_EXPORT_METHOD_AS(getRemindersAsync,
-                    getRemindersAsync:(NSDate * _Nullable)startDate
-                    endDate:(NSDate * _Nullable)endDate
+                    getRemindersAsync:(NSString * _Nullable)startDateStr
+                    endDate:(NSString * _Nullable)endDateStr
                     calendars:(NSArray *)calendars
                     status:(NSString * _Nullable)status
                     resolver:(EXPromiseResolveBlock)resolve
@@ -449,6 +452,8 @@ EX_EXPORT_METHOD_AS(getRemindersAsync,
   }
 
   NSMutableArray *reminderCalendars;
+  NSDate *startDate = [EXUtilities NSDate:startDateStr];
+  NSDate *endDate = [EXUtilities NSDate:endDateStr];
 
   if (calendars.count) {
     reminderCalendars = [[NSMutableArray alloc] init];

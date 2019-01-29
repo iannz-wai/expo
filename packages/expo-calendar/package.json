@@ -32,7 +32,7 @@
     "preset": "expo-module-scripts"
   },
   "dependencies": {
-    "expo-errors": "^1.0.0",
+    "expo-errors": "~1.0.0",
     "expo-permissions-interface": "^2.0.0"
   },
   "peerDependencies": {

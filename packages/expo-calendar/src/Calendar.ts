@@ -1,3 +1,4 @@
+import { UnavailabilityError } from 'expo-errors';
 import { Platform, processColor } from 'react-native';
 
 import ExpoCalendar from './ExpoCalendar';
@@ -118,6 +119,9 @@ type RecurrenceRule = {
 };
 
 export async function getCalendarsAsync(entityType?: string): Promise<void> {
+  if (!ExpoCalendar.getCalendarsAsync) {
+    throw new UnavailabilityError('Calendar', 'getCalendarsAsync');
+  }
   if (!entityType) {
     return ExpoCalendar.getCalendarsAsync(null);
   }
@@ -125,12 +129,18 @@ export async function getCalendarsAsync(entityType?: string): Promise<void> {
 }
 
 export async function createCalendarAsync(details: Calendar = {}): Promise<string> {
+  if (!ExpoCalendar.saveCalendarAsync) {
+    throw new UnavailabilityError('Calendar', 'createCalendarAsync');
+  }
   let color = details.color ? processColor(details.color) : undefined;
   const newDetails = { ...details, id: undefined, color };
   return ExpoCalendar.saveCalendarAsync(newDetails);
 }
 
 export async function updateCalendarAsync(id: string, details: Calendar = {}): Promise<string> {
+  if (!ExpoCalendar.saveCalendarAsync) {
+    throw new UnavailabilityError('Calendar', 'updateCalendarAsync');
+  }
   if (!id) {
     throw new Error(
       'updateCalendarAsync must be called with an id (string) of the target calendar'
@@ -174,6 +184,9 @@ export async function updateCalendarAsync(id: string, details: Calendar = {}): P
 }
 
 export async function deleteCalendarAsync(id: string): Promise<void> {
+  if (!ExpoCalendar.deleteCalendarAsync) {
+    throw new UnavailabilityError('Calendar', 'deleteCalendarAsync');
+  }
   if (!id) {
     throw new Error(
       'deleteCalendarAsync must be called with an id (string) of the target calendar'
@@ -187,6 +200,9 @@ export async function getEventsAsync(
   startDate: Date,
   endDate: Date
 ): Promise<Event[]> {
+  if (!ExpoCalendar.getEventsAsync) {
+    throw new UnavailabilityError('Calendar', 'getEventsAsync');
+  }
   if (!startDate) {
     throw new Error('getEventsAsync must be called with a startDate (date) to search for events');
   }
@@ -205,6 +221,9 @@ export async function getEventAsync(
   id: string,
   { futureEvents = false, instanceStartDate }: RecurringEventOptions = {}
 ): Promise<Event> {
+  if (!ExpoCalendar.getEventByIdAsync) {
+    throw new UnavailabilityError('Calendar', 'getEventAsync');
+  }
   if (!id) {
     throw new Error('getEventAsync must be called with an id (string) of the target event');
   }
@@ -216,6 +235,9 @@ export async function getEventAsync(
 }
 
 export async function createEventAsync(calendarId: string, details: Event = {}): Promise<string> {
+  if (!ExpoCalendar.saveEventAsync) {
+    throw new UnavailabilityError('Calendar', 'createEventAsync');
+  }
   if (!calendarId) {
     throw new Error('createEventAsync must be called with an id (string) of the target calendar');
   }
@@ -245,6 +267,9 @@ export async function updateEventAsync(
   details: Event = {},
   { futureEvents = false, instanceStartDate }: RecurringEventOptions = {}
 ): Promise<string> {
+  if (!ExpoCalendar.saveEventAsync) {
+    throw new UnavailabilityError('Calendar', 'updateEventAsync');
+  }
   if (!id) {
     throw new Error('updateEventAsync must be called with an id (string) of the target event');
   }
@@ -272,6 +297,9 @@ export async function deleteEventAsync(
   id: string,
   { futureEvents = false, instanceStartDate }: RecurringEventOptions = {}
 ): Promise<void> {
+  if (!ExpoCalendar.deleteEventAsync) {
+    throw new UnavailabilityError('Calendar', 'deleteEventAsync');
+  }
   if (!id) {
     throw new Error('deleteEventAsync must be called with an id (string) of the target event');
   }
@@ -285,6 +313,9 @@ export async function getAttendeesForEventAsync(
   id: string,
   { futureEvents = false, instanceStartDate }: RecurringEventOptions = {}
 ): Promise<Attendee[]> {
+  if (!ExpoCalendar.getAttendeesForEventAsync) {
+    throw new UnavailabilityError('Calendar', 'getAttendeesForEventAsync');
+  }
   if (!id) {
     throw new Error(
       'getAttendeesForEventAsync must be called with an id (string) of the target event'
@@ -299,8 +330,8 @@ export async function createAttendeeAsync(
   eventId: string,
   details: Attendee = {}
 ): Promise<string> {
-  if (Platform.OS === 'ios') {
-    throw new Error('createAttendeeAsync is not available on iOS');
+  if (!ExpoCalendar.saveAttendeeForEventAsync) {
+    throw new UnavailabilityError('Calendar', 'createAttendeeAsync');
   }
   if (!eventId) {
     throw new Error('createAttendeeAsync must be called with an id (string) of the target event');
@@ -322,8 +353,8 @@ export async function createAttendeeAsync(
 } // Android
 
 export async function updateAttendeeAsync(id: string, details: Attendee = {}): Promise<string> {
-  if (Platform.OS === 'ios') {
-    throw new Error('updateAttendeeAsync is not available on iOS');
+  if (!ExpoCalendar.saveAttendeeForEventAsync) {
+    throw new UnavailabilityError('Calendar', 'updateAttendeeAsync');
   }
   if (!id) {
     throw new Error('updateAttendeeAsync must be called with an id (string) of the target event');
@@ -333,8 +364,8 @@ export async function updateAttendeeAsync(id: string, details: Attendee = {}): P
 } // Android
 
 export async function deleteAttendeeAsync(id: string): Promise<void> {
-  if (Platform.OS === 'ios') {
-    throw new Error('deleteAttendeeAsync is not available on iOS');
+  if (!ExpoCalendar.deleteAttendeeAsync) {
+    throw new UnavailabilityError('Calendar', 'deleteAttendeeAsync');
   }
   if (!id) {
     throw new Error('deleteAttendeeAsync must be called with an id (string) of the target event');
@@ -348,8 +379,8 @@ export async function getRemindersAsync(
   startDate: Date,
   endDate: Date
 ): Promise<Reminder[]> {
-  if (Platform.OS === 'android') {
-    throw new Error('getRemindersAsync is not available on Android');
+  if (!ExpoCalendar.getRemindersAsync) {
+    throw new UnavailabilityError('Calendar', 'getRemindersAsync');
   }
   if (status && !startDate) {
     throw new Error(
@@ -375,8 +406,8 @@ export async function getRemindersAsync(
 } // iOS
 
 export async function getReminderAsync(id: string): Promise<Reminder> {
-  if (Platform.OS === 'android') {
-    throw new Error('getReminderAsync is not available on Android');
+  if (!ExpoCalendar.getReminderByIdAsync) {
+    throw new UnavailabilityError('Calendar', 'getReminderAsync');
   }
   if (!id) {
     throw new Error('getReminderAsync must be called with an id (string) of the target reminder');
@@ -388,8 +419,8 @@ export async function createReminderAsync(
   calendarId: string,
   details: Reminder = {}
 ): Promise<string> {
-  if (Platform.OS === 'android') {
-    throw new Error('createReminderAsync is not available on Android');
+  if (!ExpoCalendar.saveReminderAsync) {
+    throw new UnavailabilityError('Calendar', 'createReminderAsync');
   }
   if (!calendarId) {
     throw new Error(
@@ -405,8 +436,8 @@ export async function createReminderAsync(
 } // iOS
 
 export async function updateReminderAsync(id: string, details: Reminder = {}): Promise<string> {
-  if (Platform.OS === 'android') {
-    throw new Error('updateReminderAsync is not available on Android');
+  if (!ExpoCalendar.saveReminderAsync) {
+    throw new UnavailabilityError('Calendar', 'updateReminderAsync');
   }
   if (!id) {
     throw new Error(
@@ -425,8 +456,8 @@ export async function updateReminderAsync(id: string, details: Reminder = {}): P
 } // iOS
 
 export async function deleteReminderAsync(id: string): Promise<void> {
-  if (Platform.OS === 'android') {
-    throw new Error('deleteReminderAsync is not available on Android');
+  if (!ExpoCalendar.deleteReminderAsync) {
+    throw new UnavailabilityError('Calendar', 'deleteReminderAsync');
   }
   if (!id) {
     throw new Error(
@@ -437,15 +468,15 @@ export async function deleteReminderAsync(id: string): Promise<void> {
 } // iOS
 
 export async function getSourcesAsync(): Promise<Source[]> {
-  if (Platform.OS === 'android') {
-    throw new Error('getSourcesAsync is not available on Android');
+  if (!ExpoCalendar.getSourcesAsync) {
+    throw new UnavailabilityError('Calendar', 'getSourcesAsync');
   }
   return ExpoCalendar.getSourcesAsync();
 } // iOS
 
 export async function getSourceAsync(id: string): Promise<Source> {
-  if (Platform.OS === 'android') {
-    throw new Error('getSourceAsync is not available on Android');
+  if (!ExpoCalendar.getSourceByIdAsync) {
+    throw new UnavailabilityError('Calendar', 'getSourceAsync');
   }
   if (!id) {
     throw new Error('getSourceAsync must be called with an id (string) of the target source');
@@ -454,8 +485,8 @@ export async function getSourceAsync(id: string): Promise<Source> {
 } // iOS
 
 export function openEventInCalendar(id: string): void {
-  if (Platform.OS === 'ios') {
-    console.warn('openEventInCalendar is not available on iOS');
+  if (!ExpoCalendar.openEventInCalendar) {
+    console.warn(`openEventInCalendar is not available on platform: ${Platform.OS}`);
     return;
   }
   if (!id) {

@@ -712,6 +712,26 @@ EX_EXPORT_METHOD_AS(getSourceByIdAsync,
   resolve([EXCalendarConverter serializeSource:source]);
 }
 
+EX_EXPORT_METHOD_AS(requestPermissionsAsync,
+                    requestPermissionsAsync:(EXPromiseResolveBlock)resolve
+                    reject:(EXPromiseRejectBlock)reject)
+{
+  if (!_permissionsManager) {
+    return reject(@"E_NO_PERMISSIONS", @"Permissions module not found. Are you sure that Expo modules are properly linked?", nil);
+  }
+  [_permissionsManager askForPermission:@"calendar" withResult:resolve withRejecter:reject];
+}
+
+EX_EXPORT_METHOD_AS(requestRemindersPermissionsAsync,
+                    requestRemindersPermissionsAsync:(EXPromiseResolveBlock)resolve
+                    reject:(EXPromiseRejectBlock)reject)
+{
+  if (!_permissionsManager) {
+    return reject(@"E_NO_PERMISSIONS", @"Permissions module not found. Are you sure that Expo modules are properly linked?", nil);
+  }
+  [_permissionsManager askForPermission:@"reminders" withResult:resolve withRejecter:reject];
+}
+
 #pragma mark - helpers
 
 - (EKEvent * _Nullable)_getEventWithId:(NSString *)eventId startDate:(NSDate * _Nullable)startDate

@@ -15,6 +15,7 @@ import expo.modules.av.AVPackage;
 import expo.modules.backgroundfetch.BackgroundFetchPackage;
 import expo.modules.barcodescanner.BarCodeScannerPackage;
 import expo.modules.blurview.BlurViewPackage;
+import expo.modules.brightness.BrightnessPackage;
 import expo.modules.camera.CameraPackage;
 import expo.modules.constants.ConstantsPackage;
 import expo.modules.contacts.ContactsPackage;
@@ -25,9 +26,9 @@ import expo.modules.filesystem.FileSystemPackage;
 import expo.modules.font.FontLoaderPackage;
 import expo.modules.gl.GLPackage;
 import expo.modules.google.signin.GoogleSignInPackage;
+import expo.modules.imagepicker.ImagePickerPackage;
 import expo.modules.keepawake.KeepAwakePackage;
 import expo.modules.lineargradient.LinearGradientPackage;
-import expo.modules.imagepicker.ImagePickerPackage;
 import expo.modules.localauthentication.LocalAuthenticationPackage;
 import expo.modules.localization.LocalizationPackage;
 import expo.modules.location.LocationPackage;
@@ -53,6 +54,7 @@ public class ExperiencePackagePicker {
       new BackgroundFetchPackage(),
       new BarCodeScannerPackage(),
       new BlurViewPackage(),
+      new BrightnessPackage(),
       new CameraPackage(),
       new ConstantsPackage(),
       new ContactsPackage(),

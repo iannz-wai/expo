@@ -15,6 +15,8 @@ async function createTestCalendarAsync(patch = {}) {
       isLocalAccount: true,
       name: 'expo',
     },
+    ownerAccount: 'expo',
+    accessLevel: Calendar.CalendarAccessLevel.OWNER,
     ...patch,
   });
 }
@@ -41,6 +43,21 @@ async function createTestEventAsync(calendarId) {
     notes: 'The very first Expo & React Native conference in Europe',
     availability: Calendar.Availability.BUSY,
   });
+}
+
+async function createTestAttendeeAsync(eventId) {
+  return await Calendar.createAttendeeAsync(eventId, {
+    name: 'Guest',
+    email: 'guest@expo.io',
+    role: Calendar.AttendeeRole.ATTENDEE,
+    status: Calendar.AttendeeStatus.ACCEPTED,
+    type: Calendar.AttendeeType.PERSON,
+  });
+}
+
+async function getAttendeeByIdAsync(eventId, attendeeId) {
+  const attendees = await Calendar.getAttendeesForEventAsync(eventId);
+  return attendees.find(attendee => attendee.id === attendeeId);
 }
 
 async function createTestReminderAsync(calendarId) {
@@ -80,7 +97,7 @@ export async function test(t) {
       t.expect(typeof calendar.isPrimary).toBe('boolean');
       t.expect(typeof calendar.name).toBe('string');
       t.expect(typeof calendar.ownerAccount).toBe('string');
-      t.expect(typeof calendar.timeZone).toBe('string');
+      calendar.timeZone && t.expect(typeof calendar.timeZone).toBe('string');
 
       t.expect(Array.isArray(calendar.allowedReminders)).toBe(true);
       calendar.allowedReminders.forEach(reminder => {
@@ -133,17 +150,19 @@ export async function test(t) {
       t.expect(typeof event.guestsCanModify).toBe('boolean');
       t.expect(typeof event.guestsCanInviteOthers).toBe('boolean');
       t.expect(typeof event.guestsCanSeeGuests).toBe('boolean');
-      t.expect(typeof event.originalId).toBe('string');
-      t.expect(typeof event.instanceId).toBe('string');
+      event.originalId && t.expect(typeof event.originalId).toBe('string');
+      event.instanceId && t.expect(typeof event.instanceId).toBe('string');
     }
   }
 
   function testCalendarSourceShape(source) {
     t.expect(source).toBeDefined();
-    t.expect(typeof source.id).toBe('string');
     t.expect(typeof source.name).toBe('string');
     t.expect(typeof source.type).toBe('string');
 
+    if (Platform.OS === 'ios') {
+      t.expect(typeof source.id).toBe('string');
+    }
     if (Platform.OS === 'android') {
       t.expect(typeof source.isLocalAccount).toBe('boolean');
     }
@@ -345,7 +364,27 @@ export async function test(t) {
     });
 
     t.describe('updateEventAsync()', () => {
+      let calendarId, eventId;
 
+      t.beforeAll(async () => {
+        calendarId = await createTestCalendarAsync();
+        eventId = await createTestEventAsync(calendarId);
+      });
+
+      t.it('updates an event', async () => {
+        await Calendar.updateEventAsync(eventId, {
+          availability: Calendar.Availability.FREE,
+        });
+        const updatedEvent = await Calendar.getEventAsync(eventId);
+
+        t.expect(updatedEvent).toBeDefined();
+        t.expect(updatedEvent.id).toBe(eventId);
+        t.expect(updatedEvent.availability).toBe(Calendar.Availability.FREE);
+      });
+
+      t.afterAll(async () => {
+        await Calendar.deleteCalendarAsync(calendarId);
+      });
     });
 
     t.describe('deleteEventAsync()', () => {
@@ -377,15 +416,75 @@ export async function test(t) {
 
     if (Platform.OS === 'android') {
       t.describe('createAttendeeAsync()', () => {
+        let calendarId, eventId;
 
+        t.beforeAll(async () => {
+          calendarId = await createTestCalendarAsync();
+          eventId = await createTestEventAsync(calendarId);
+        });
+
+        t.it('creates an attendee', async () => {
+          const attendeeId = await createTestAttendeeAsync(eventId);
+          const attendees = await Calendar.getAttendeesForEventAsync(eventId);
+
+          t.expect(Array.isArray(attendees)).toBe(true);
+
+          const newAttendee = attendees.find(attendee => attendee.id === attendeeId);
+
+          t.expect(newAttendee).toBeDefined();
+          testAttendeeShape(newAttendee);
+        });
+
+        t.afterAll(async () => {
+          await Calendar.deleteCalendarAsync(calendarId);
+        });
       });
 
       t.describe('updateAttendeeAsync()', () => {
+        let calendarId, eventId, attendeeId;
 
+        t.beforeAll(async () => {
+          calendarId = await createTestCalendarAsync();
+          eventId = await createTestEventAsync(calendarId);
+          attendeeId = await createTestAttendeeAsync(eventId);
+        });
+
+        t.it('updates attendee record', async () => {
+          const updatedAttendeeId = await Calendar.updateAttendeeAsync(attendeeId, {
+            role: Calendar.AttendeeRole.PERFORMER,
+          });
+          const updatedAttendee = await getAttendeeByIdAsync(eventId, attendeeId);
+
+          t.expect(updatedAttendeeId).toBe(attendeeId);
+          t.expect(updatedAttendee).toBeDefined();
+          t.expect(updatedAttendee.role).toBe(Calendar.AttendeeRole.PERFORMER);
+        });
+
+        t.afterAll(async () => {
+          await Calendar.deleteCalendarAsync(calendarId);
+        });
       });
 
       t.describe('deleteAttendeeAsync()', () => {
+        let calendarId, eventId;
 
+        t.beforeAll(async () => {
+          calendarId = await createTestCalendarAsync();
+          eventId = await createTestEventAsync(calendarId);
+        });
+
+        t.it('deletes an attendee', async () => {
+          const attendeeId = await createTestAttendeeAsync(eventId);
+          await Calendar.deleteAttendeeAsync(attendeeId);
+
+          const attendee = await getAttendeeByIdAsync(eventId, attendeeId);
+
+          t.expect(attendee).toBeUndefined();
+        });
+
+        t.afterAll(async () => {
+          await Calendar.deleteCalendarAsync(calendarId);
+        });
       });
     } else {
       expectMethodsToReject([
@@ -532,6 +631,14 @@ export async function test(t) {
           await Calendar.deleteCalendarAsync(calendarId);
         });
       });
+
+      t.describe('getSourcesAsync()', () => {
+        t.it('returns an array of sources', async () => {
+          const sources = await Calendar.getSourcesAsync();
+
+          t.expect(Array.isArray(sources)).toBe(true);
+        });
+      });
     } else {
       expectMethodsToReject([
         'requestRemindersPermissionsAsync',
@@ -540,15 +647,8 @@ export async function test(t) {
         'createReminderAsync',
         'updateReminderAsync',
         'deleteReminderAsync',
+        'getSourcesAsync',
       ]);
     }
-
-    t.describe('getSources()', () => {
-      t.it('returns an array of sources', async () => {
-        const sources = await Calendar.getSourcesAsync();
-
-        t.expect(Array.isArray(sources)).toBe(true);
-      });
-    });
   });
 }

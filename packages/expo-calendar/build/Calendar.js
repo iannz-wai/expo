@@ -104,9 +104,6 @@ export async function createEventAsync(calendarId, details = {}) {
         if (!details.endDate) {
             throw new Error('createEventAsync requires an endDate (Date)');
         }
-        if (!details.timeZone) {
-            throw new Error('createEventAsync requires a timeZone (string)');
-        }
     }
     const newDetails = {
         ...details,
